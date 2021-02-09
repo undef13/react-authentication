@@ -1,33 +1,40 @@
+// Dependencies
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const JwtStrategy = require("passport-jwt").Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
+const jwt = require('jsonwebtoken');
+
+// User model
 const User = require("../models/User");
 
-const cookieExtractor = req => {
-  let token = null;
-  if(req && req.cookies) {
-    token = req.cookies["access_token"];
-  }
-  return token;
-}
+// Function to sign token
+exports.getToken = (user) => {
+  return jwt.sign(user, "My lovely bird", { expiresIn: 3600 });
+};
 
+// JWT strategy
 const opts = {
-  jwtFromRequest: cookieExtractor,
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
   secretOrKey: "My lovely bird"
-}
+};
 
-passport.use(new JwtStrategy(opts, async (payload, done) => {
-  try {
-    const user = await User.findById({ _id: payload.sub });
-    if(!user) {
-      return done(null, false);
-    }
-    return done(null, user);
-  } catch (error) {
-    console.error(error);
-  }
-}));
+exports.jwtPassport = passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
+      console.log("JWT payload: ", jwt_payload);
+      try {
+        const user = await User.findOne({ _id: jwt_payload._id });
+        if(!user) {
+          return done(null, false);
+        }
+        return done(null, user);
+      } catch (error) {
+        console.error(error);
+        return done(error, false);
+      }
+  })
+);
 
+// Local strategy
 passport.use(new LocalStrategy(async (username, password, done) => {
   try {
     const user = await User.findOne({ username });
@@ -38,3 +45,17 @@ passport.use(new LocalStrategy(async (username, password, done) => {
     console.error(error);
   }
 }));
+
+
+// Serializing & deserializing user
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+});
+
+// exports.verifyUser = passport.authenticate('jwt', {session: false});

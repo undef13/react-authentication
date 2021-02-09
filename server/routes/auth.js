@@ -6,17 +6,6 @@ const User = require("../models/User");
 const JWT = require("jsonwebtoken");
 const router = express.Router();
 
-const signToken = (userId) => {
-  return JWT.sign(
-    {
-      iss: "emalsidog's company",
-      sub: userId,
-    },
-    "My lovely bird",
-    { expiresIn: "1h" }
-  );
-};
-
 const response = (res, status, responseBody) => {
   return res.status(status).json(responseBody);
 };
@@ -114,35 +103,18 @@ router.post("/register", async (req, res) => {
 
 // /accounts/login
 router.post("/login", passport.authenticate("local", { session: false }), (req, res) => {
-    if (req.isAuthenticated()) {
-      const { _id, username, givenName, familyName } = req.user;
-      const token = signToken(_id);
-
-      res.cookie("access_token", token, { httpOnly: true, sameSite: true });
-
-      return response(res, 200, {
-        isError: false,
-        message: "Successfully logged in.",
-        body: {
-          isAuthenticated: true,
-          user: { username, givenName, familyName },
-        },
-      });
-    }
-  }
-);
-
-// /accounts/logout
-router.get("/logout", passport.authenticate("jwt", { session: false }), (req, res) => {
-    res.clearCookie("access_token");
-    return response(res, 200, {
+  const { _id, username, givenName, familyName } = req.user;
+    const token = passportConfig.getToken({ _id });
+    return res.status(200).json({
       isError: false,
-      message: "Successfully logged out.",
+      message: "Successfully logged in.",
       body: {
-        isAuthenticated: false,
-        user: null,
+        isAuthenticated: true,
+        user: { username, givenName, familyName },
+        token
       },
     });
+
   }
 );
 

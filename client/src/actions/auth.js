@@ -4,23 +4,34 @@ import {
   USER_LOGIN_FAILURE,
   USER_REGISTER_SUCCESS,
   USER_REGISTER_FAILURE,
-  USER_LOGOUT, } from "../constants/actionTypes";
+  USER_LOGOUT } from "../constants/actionTypes";
 
 export const setCurrentUser = () => {
   return async (dispatch) => {
-    try {
-      const response = await fetch("/accounts/authenticated");
-      if(response.status !== 401) {
-        const data = await response.json();
-        dispatch({
-          type: SET_CURRENT_USER,
-          payload: data.body
+    if(localStorage.getItem("token")) {
+      try {
+        const response = await fetch("/accounts/authenticated", {
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem("token")
+          }
         });
-      } else {
-        return { isAuthenticated: false, user: null }
+        if(response.status !== 401) {
+          const data = await response.json();
+          dispatch({
+            type: SET_CURRENT_USER,
+            payload: data.body
+          });
+        } else {
+          return { isAuthenticated: false, user: null }
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
+    } else {
+      dispatch({
+        type: SET_CURRENT_USER,
+        payload: { isAuthenticated: false, user: null }
+      });
     }
   }
 }
@@ -38,6 +49,7 @@ export const userLogin = (user) => {
       
       if(response.status !== 401) {
         const data = await response.json();
+        localStorage.setItem("token", data.body.token);
         dispatch({
           type: USER_LOGIN_SUCCESS,
           payload: data.body
@@ -52,9 +64,9 @@ export const userLogin = (user) => {
 }
 
 export const userLogout = () => {
-  return async (dispatch) => {
+  return (dispatch) => {
     try {
-      await fetch("/accounts/logout");
+      localStorage.removeItem("token");
       dispatch({ type: USER_LOGOUT });
     } catch (error) {
       console.error(error);
@@ -64,7 +76,6 @@ export const userLogout = () => {
 
 export const userRegister = (user) => {
   return async (dispatch) => {
-
     try {
       const response = await fetch("/accounts/register", {
         method: "POST",
