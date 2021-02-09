@@ -1,11 +1,14 @@
+// Dependencies
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
+import GoogleLogin from "react-google-login";
 
+// Actions
 import { userLogin } from "../../actions/auth";
 
 const Login = ({ userLogin, isAuthenticated, history }) => {
 
-  const [user, setUser] = useState({ username: "", password: "" });
+  const [user, setUser] = useState({ email: "", password: "" });
 
   const onSubmit = e => {
     e.preventDefault();
@@ -22,15 +25,35 @@ const Login = ({ userLogin, isAuthenticated, history }) => {
     }
   }, [isAuthenticated, history]);
 
+  const handleLogin = async googleData => {
+    console.log(googleData.tokenId);
+    const test = JSON.stringify({
+      token: googleData.tokenId
+    });
+    console.log(test);
+    const res = await fetch("/accounts/google", {
+      method: "POST",
+      body: test,
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+  };
 
   return (
     <div>
       <h3>Login</h3>
       <form onSubmit={onSubmit}>
-        <input onChange={onChange} value={user.username} type="text" name="username" placeholder="Input username" />
+        <input onChange={onChange} value={user.email} type="text" name="email" placeholder="Input email" />
         <input onChange={onChange} value={user.password} type="password" name="password" placeholder="Input password" />
         <button type="submit">Submit</button>
       </form>
+      <GoogleLogin 
+        clientId="1051398545639-mpgsb6eo4esvtvttqq7m9ts6g0du0hb3.apps.googleusercontent.com"
+        buttonText="Log In with Google"
+        onSuccess={handleLogin}
+        onFailure={handleLogin}
+      />
     </div>
   );
 }

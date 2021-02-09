@@ -3,8 +3,10 @@ const express = require("express");
 const passport = require("passport");
 const passportConfig = require("../config/passport");
 const User = require("../models/User");
-const JWT = require("jsonwebtoken");
 const router = express.Router();
+const bcrypt = require("bcrypt");
+const { OAuth2Client } = require('google-auth-library')
+const client = new OAuth2Client("1051398545639-mpgsb6eo4esvtvttqq7m9ts6g0du0hb3.apps.googleusercontent.com");
 
 const response = (res, status, responseBody) => {
   return res.status(status).json(responseBody);
@@ -13,25 +15,12 @@ const response = (res, status, responseBody) => {
 // /accounts/register/
 router.post("/register", async (req, res) => {
   const {
-    username,
+    email,
     password,
     passwordConfirm,
     givenName,
     familyName,
   } = req.body;
-  
-  if(username.length < 6) {
-    return response(res, 400, {
-      isError: true,
-      message: "Username must be at least 6 characters."
-    });
-  }else if (!/^[a-z0-9]+$/i.test(username)) {
-    return response(res, 400, {
-      isError: true,
-      message: "Username must contain only numbers and letters."
-    });
-  }
-
   if(givenName.length < 3 || givenName.length > 15) {
     return response(res, 400, {
       isError: true,
@@ -72,21 +61,24 @@ router.post("/register", async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email });
     if (user) {
       return response(res, 400, {
         isError: true,
-        message: "Username is already taken",
+        message: "Email is already registered",
       });
     }
 
     const newUser = new User({
-      username,
+      email,
       password,
       givenName,
       familyName,
     });
-
+    
+    const passwordHash = await bcrypt.hash(password, 10);
+    newUser.password = passwordHash;
+    console.log(newUser);
     await newUser.save();
 
     return response(res, 201, {
@@ -94,6 +86,7 @@ router.post("/register", async (req, res) => {
       message: "Your account has been successfully created. Please, log in.",
     });
   } catch (error) {
+    console.error(error);
     return response(res, 500, {
       isError: true,
       message: "Something went wrong... Please, try again later.",
@@ -103,33 +96,56 @@ router.post("/register", async (req, res) => {
 
 // /accounts/login
 router.post("/login", passport.authenticate("local", { session: false }), (req, res) => {
-  const { _id, username, givenName, familyName } = req.user;
-    const token = passportConfig.getToken({ _id });
-    return res.status(200).json({
-      isError: false,
-      message: "Successfully logged in.",
-      body: {
-        isAuthenticated: true,
-        user: { username, givenName, familyName },
-        token
-      },
-    });
-
+  console.log(req.body)
+  const { _id, email, givenName, familyName } = req.user;
+  const token = passportConfig.getToken({ _id });
+  return res.status(200).json({
+    isError: false,
+    message: "Successfully logged in.",
+    body: {
+      isAuthenticated: true,
+      user: { email, givenName, familyName },
+      token
+    },
+  });
   }
 );
 
 // /accounts/authenticated
 router.get("/authenticated", passport.authenticate("jwt", { session: false }), (req, res) => {
-    const { username, givenName, familyName } = req.user;
+    const { email, givenName, familyName } = req.user;
     return response(res, 200, {
       isError: false,
       message: "",
       body: {
         isAuthenticated: true,
-        user: { username, givenName, familyName }
+        user: { email, givenName, familyName }
       }
     });
   }
 );
+
+router.post("/google", async (req, res) => {
+  const { token } = req.body
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: "1051398545639-mpgsb6eo4esvtvttqq7m9ts6g0du0hb3.apps.googleusercontent.com"
+    });
+    const { given_name, family_name, email } = ticket.getPayload();  
+     
+  } catch (error) {
+    console.error(error);
+  }
+ 
+
+  // const user = await db.user.upsert({ 
+  //     where: { email: email },
+  //     update: { name, picture },
+  //     create: { name, email, picture }
+  // })
+  // res.status(201)
+  // res.json(user)
+})
 
 module.exports = router;

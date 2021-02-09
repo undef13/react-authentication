@@ -8,7 +8,7 @@ const Register = (props) => {
   const [userRegister, setUserRegister] = useState({
     givenName: "",
     familyName: "",
-    username: "",
+    email: "",
     password: "",
     passwordConfirm: ""
   });
@@ -29,7 +29,7 @@ const Register = (props) => {
       <form onSubmit={(e) => onSubmit(e)}>
         <input name="givenName" placeholder="Name" type="text" onChange={onChange} />
         <input name="familyName" placeholder="Last name" type="text" onChange={onChange} />
-        <input name="username" placeholder="Username" type="text" onChange={onChange} />
+        <input name="email" placeholder="Email" type="text" onChange={onChange} />
         <input name="password" placeholder="Password" type="password" onChange={onChange} />
         <input name="passwordConfirm" placeholder="Confirm password" type="password" onChange={onChange} />
         <button type="submit">Register</button>

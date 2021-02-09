@@ -35,9 +35,12 @@ exports.jwtPassport = passport.use(new JwtStrategy(opts, async (jwt_payload, don
 );
 
 // Local strategy
-passport.use(new LocalStrategy(async (username, password, done) => {
+passport.use(new LocalStrategy({
+  usernameField: "email", 
+  passwordField: "password"
+}, async (email, password, done) => {
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email });
     if(!user)
       return done(null, false);
     user.comparePasswords(password, done);
@@ -45,7 +48,6 @@ passport.use(new LocalStrategy(async (username, password, done) => {
     console.error(error);
   }
 }));
-
 
 // Serializing & deserializing user
 passport.serializeUser(function(user, done) {
