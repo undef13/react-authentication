@@ -4,9 +4,9 @@ import { connect } from "react-redux";
 import GoogleLogin from "react-google-login";
 
 // Actions
-import { userLogin } from "../../actions/auth";
+import { userLogin, userGoogleLogin } from "../../actions/auth";
 
-const Login = ({ userLogin, isAuthenticated, history }) => {
+const Login = ({ userLogin, userGoogleLogin, isAuthenticated, history }) => {
 
   const [user, setUser] = useState({ email: "", password: "" });
 
@@ -26,18 +26,7 @@ const Login = ({ userLogin, isAuthenticated, history }) => {
   }, [isAuthenticated, history]);
 
   const handleLogin = async googleData => {
-    console.log(googleData.tokenId);
-    const test = JSON.stringify({
-      token: googleData.tokenId
-    });
-    console.log(test);
-    const res = await fetch("/accounts/google", {
-      method: "POST",
-      body: test,
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
+    userGoogleLogin(googleData);
   };
 
   return (
@@ -67,7 +56,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    userLogin: (user) => dispatch(userLogin(user))
+    userLogin: (user) => dispatch(userLogin(user)),
+    userGoogleLogin: (googleData) => dispatch(userGoogleLogin(googleData))
   }
 }
 

@@ -12,7 +12,7 @@ const response = (res, status, responseBody) => {
   return res.status(status).json(responseBody);
 };
 
-// /accounts/register/
+// POST => /accounts/register/
 router.post("/register", async (req, res) => {
   const {
     email,
@@ -74,11 +74,12 @@ router.post("/register", async (req, res) => {
       password,
       givenName,
       familyName,
+      provider: "Local"
     });
     
     const passwordHash = await bcrypt.hash(password, 10);
     newUser.password = passwordHash;
-    console.log(newUser);
+
     await newUser.save();
 
     return response(res, 201, {
@@ -94,9 +95,8 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// /accounts/login
+// POST => /accounts/login
 router.post("/login", passport.authenticate("local", { session: false }), (req, res) => {
-  console.log(req.body)
   const { _id, email, givenName, familyName } = req.user;
   const token = passportConfig.getToken({ _id });
   return res.status(200).json({
@@ -111,7 +111,7 @@ router.post("/login", passport.authenticate("local", { session: false }), (req, 
   }
 );
 
-// /accounts/authenticated
+// GET => /accounts/authenticated
 router.get("/authenticated", passport.authenticate("jwt", { session: false }), (req, res) => {
     const { email, givenName, familyName } = req.user;
     return response(res, 200, {
@@ -125,6 +125,7 @@ router.get("/authenticated", passport.authenticate("jwt", { session: false }), (
   }
 );
 
+// POST => /accounts/google
 router.post("/google", async (req, res) => {
   const { token } = req.body
   try {
@@ -132,8 +133,41 @@ router.post("/google", async (req, res) => {
       idToken: token,
       audience: "1051398545639-mpgsb6eo4esvtvttqq7m9ts6g0du0hb3.apps.googleusercontent.com"
     });
-    const { given_name, family_name, email } = ticket.getPayload();  
-     
+    const { given_name: givenName, family_name: familyName, email } = ticket.getPayload();  
+
+    const user = await User.findOne({ email });
+
+    if(!user) {
+      const newUser = new User({
+        email,
+        givenName,
+        familyName,
+        provider: "Google"
+      });
+      await newUser.save();
+      const token = passportConfig.getToken({ _id: newUser._id });
+      return res.status(201).json({
+        isError: false,
+        message: "Successfully logged in.",
+        body: {
+          isAuthenticated: true,
+          user: { email, givenName, familyName },
+          token
+        }
+      });
+    } else {
+      const { _id, givenName, familyName, email } = user;
+      const token = passportConfig.getToken({ _id });
+      return res.status(200).json({
+        isError: false,
+        message: "Successfully logged in.",
+        body: {
+          isAuthenticated: true,
+          user: { email, givenName, familyName },
+          token
+        }
+      });
+    }
   } catch (error) {
     console.error(error);
   }

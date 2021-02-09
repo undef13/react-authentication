@@ -3,6 +3,7 @@ import { Route, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 
 const UnprotectedRoute = ({ component: Component, isAuthenticated, ...rest }) => {
+  console.log(isAuthenticated);
   return (
     <Route {...rest} render={props => {
       if(isAuthenticated) {

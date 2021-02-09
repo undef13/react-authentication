@@ -4,11 +4,14 @@ import {
   USER_LOGIN_FAILURE,
   USER_REGISTER_SUCCESS,
   USER_REGISTER_FAILURE,
+  USER_GOOGLE_LOGIN,
   USER_LOGOUT } from "../constants/actionTypes";
 
 export const setCurrentUser = () => {
   return async (dispatch) => {
-    if(localStorage.getItem("token")) {
+    console.log(`Before checking local storage`);
+    if(localStorage.getItem("token") !== null) {
+      console.log(`Token exists! (${localStorage.getItem("token")})`);
       try {
         const response = await fetch("/accounts/authenticated", {
           headers: {
@@ -28,6 +31,7 @@ export const setCurrentUser = () => {
         console.error(error);
       }
     } else {
+      console.log(`Token does not exists! (${localStorage.getItem("token")})`);
       dispatch({
         type: SET_CURRENT_USER,
         payload: { isAuthenticated: false, user: null }
@@ -98,5 +102,25 @@ export const userRegister = (user) => {
     } catch (error) {
       console.error(error);
     }
+  }
+}
+
+export const userGoogleLogin = googleData => {
+  return async dispatch => {
+    const response = await fetch("/accounts/google", {
+      method: "POST",
+      body: JSON.stringify({
+        token: googleData.tokenId
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+    const json = await response.json();
+    localStorage.setItem("token", json.body.token);
+    dispatch({
+      type: USER_GOOGLE_LOGIN,
+      payload: json.body
+    });
   }
 }

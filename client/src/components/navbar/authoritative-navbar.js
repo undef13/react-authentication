@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const AuthoritativeNavbar = ({ user, logoutHandler }) => {
+  const { givenName, familyName, email } = user;
   return (
     <ul>
       <Link to="/">
@@ -10,7 +11,8 @@ const AuthoritativeNavbar = ({ user, logoutHandler }) => {
           Home
         </li>
       </Link>
-      <li>You are: {`${user.givenName} "${user.username}" ${user.familyName}`}</li>
+      <li>You are: {`${givenName} ${familyName}`}</li>
+      <li>Your email: {`${email}`}</li>
       <div>
         <button type="button" onClick={logoutHandler}>Logout</button>
       </div>

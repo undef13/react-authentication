@@ -20,6 +20,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  provider: {
+    type: String
+  },
   registrationDate: {
     type: Date,
     default: new Date()

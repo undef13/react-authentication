@@ -4,7 +4,8 @@ import {
   USER_LOGIN_FAILURE,
   USER_REGISTER_SUCCESS,
   USER_REGISTER_FAILURE,
-  USER_LOGOUT  } from "../constants/actionTypes";
+  USER_GOOGLE_LOGIN,
+  USER_LOGOUT } from "../constants/actionTypes";
 
 const initialState = {
   user: null,
@@ -31,6 +32,15 @@ const auth = (state = initialState, action) => {
       return state;
     case USER_REGISTER_FAILURE:
       return state;
+    case USER_GOOGLE_LOGIN:
+      const { isAuthenticated, user } = action.payload;
+      console.log(`isAuthenticated: ${isAuthenticated}`);
+      console.log(`user: ${user}`);
+      return {
+        ...state,
+        isAuthenticated,
+        user
+      };
     case USER_LOGOUT:
       return {
         ...state, 
