@@ -1,2 +1,2 @@
-import Login from "./login";
-export default Login;
+import LoginHOC from "./login-hoc";
+export default LoginHOC;
