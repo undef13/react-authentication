@@ -91,7 +91,6 @@ export const userRegister = (user) => {
 
       if(response.status !== 401) {
         const data = await response.json();
-        console.log(data);
         dispatch({
           type: USER_REGISTER_SUCCESS,
           payload: data
