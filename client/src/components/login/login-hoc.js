@@ -27,7 +27,7 @@ const LoginHOC = ({ userLogin, userGoogleLogin, isAuthenticated, history }) => {
     setUser({ ...user, [e.target.name]: e.target.value });
   }
 
-  const handleLogin = async googleData => {
+  const handleLogin = googleData => {
     userGoogleLogin(googleData);
   };
 
