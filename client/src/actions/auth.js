@@ -9,9 +9,7 @@ import {
 
 export const setCurrentUser = () => {
   return async (dispatch) => {
-    console.log(`Before checking local storage`);
     if(localStorage.getItem("token") !== null) {
-      console.log(`Token exists! (${localStorage.getItem("token")})`);
       try {
         const response = await fetch("/accounts/authenticated", {
           headers: {
@@ -28,10 +26,12 @@ export const setCurrentUser = () => {
           return { isAuthenticated: false, user: null }
         }
       } catch (error) {
-        console.error(error);
+        dispatch({
+          type: SET_CURRENT_USER,
+          payload: { isAuthenticated: false, user: null }
+        });
       }
     } else {
-      console.log(`Token does not exists! (${localStorage.getItem("token")})`);
       dispatch({
         type: SET_CURRENT_USER,
         payload: { isAuthenticated: false, user: null }
