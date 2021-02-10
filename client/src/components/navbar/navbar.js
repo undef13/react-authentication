@@ -1,8 +1,11 @@
+// Dependencies
 import React from "react";
 import { connect } from "react-redux";
 
+// Actions
 import { userLogout } from "../../actions/auth";
 
+// Components
 import AuthoritativeNavbar from "./authoritative-navbar";
 import UnauthoritativeNavbar from "./unauthoritative-navbar";
 
@@ -20,7 +23,7 @@ const Navbar = ({ isAuthenticated, user, userLogout }) => {
          <UnauthoritativeNavbar />
       }
     </div>
-  )
+  );
 }
 
 const mapStateToProps = state => {

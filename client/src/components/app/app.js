@@ -10,7 +10,7 @@ import { setCurrentUser } from "../../actions/auth";
 import UnprotectedRoute from "../../hoc/unprotected-route";
 import Navbar from "../navbar";
 import LoginHOC from "../login";
-import Register from "../register";
+import RegisterHOC from "../register";
 import Home from "../home";;
 
 const App = ({ setCurrentUser }) => {
@@ -24,7 +24,7 @@ const App = ({ setCurrentUser }) => {
       <Switch>
         <Route exact path="/" component={Home} />
         <UnprotectedRoute exact path="/login" component={LoginHOC} />
-        <UnprotectedRoute exact path="/register" component={Register} />
+        <UnprotectedRoute exact path="/register" component={RegisterHOC} />
       </Switch>
     </>
   );

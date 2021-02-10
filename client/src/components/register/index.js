@@ -1,2 +1,2 @@
-import Register from "./register";
-export default Register;
+import RegisterHOC from "./register-hoc";
+export default RegisterHOC;
